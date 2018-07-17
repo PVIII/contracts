@@ -5,19 +5,23 @@
  *      Author: pait
  */
 
+#define CONTRACTS_AUDIT
+
 #include "contracts.h"
 
 #include <iostream>
 
-void contract_violation_handler(contract_violation v)
+void contract_violation_handler(const contract_violation_info &v)
 {
-    std::cout << "contract violation in " << v.file_ << ":" << v.line_ << " "
-              << v.function_ << ", " << v.expression_ << std::endl;
+    std::cout << "contract violation [" << v.type_ << "] in "
+              << v.location_.file_name() << ":" << v.location_.line() << ", "
+              << v.func_ << ", " << v.expression_ << std::endl;
 }
 
 void func()
 {
-    EXPECT_IMPL(1 < 2);
+    EXPECT(1 < 2);
+    EXPECT_AUDIT(1 < 0);
     std::cout << "func();" << std::endl;
     ASSERT(2 > 3);
     std::cout << "func2();" << std::endl;
@@ -32,23 +36,23 @@ void throw_func()
 
 constexpr int const_func(int a)
 {
-    EXPECT_IMPL(a < 10);
+    EXPECT(a < 10);
 
-    return ENSURE_RETURN(result > 2, 2 * a);
+    return 2 * a;
 }
 
 struct A
 {
-    bool invariant() { return false; }
+    void invariant() { ASSERT(false); }
     void f()
     {
-        EXPECT_IMPL(1 > 4);
+        EXPECT(1 > 4);
         ENSURE(silly, 1 > 3);
         ENSURE_INVARIANT();
     }
     void g()
     {
-        EXPECT_IMPL(1 > 4);
+        EXPECT(1 > 4);
         ENSURE(silly, 1 > 3);
         ENSURE_INVARIANT();
         throw 1;

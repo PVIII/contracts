@@ -8,65 +8,56 @@
 #ifndef CONTRACTS_H
 #define CONTRACTS_H
 
+#include "scope_guard.h"
+
 #include <exception>
+#include <experimental/source_location>
 
-struct contract_violation
+struct contract_violation_info
 {
-    int         line_;
-    const char *file_;
-    const char *function_;
-    const char *expression_;
+    const char *                       type_;
+    std::experimental::source_location location_;
+    const char *                       func_;
+    const char *                       expression_;
 };
 
-extern void contract_violation_handler(contract_violation);
+extern void contract_violation_handler(const contract_violation_info &);
 
-template<class Func> struct scope_guard
-{
-    Func f_;
-    constexpr scope_guard(Func &&f) : f_(f) {}
-    ~scope_guard() { f_(); }
-};
-
-template<class T, class Func>
-constexpr T check_return(T &&t, Func &&checker, const contract_violation &v)
-{
-    if(not checker(std::forward<T>(t)))
-    {
-        contract_violation_handler(v);
+#define CONTRACT(type, x, location, func, expr)                   \
+    if(not(x))                                                    \
+    {                                                             \
+        contract_violation_handler(                               \
+            contract_violation_info{type, location, func, expr}); \
     }
-    return std::forward<T>(t);
-}
 
-#define CONTRACT(x, line, file, func, expr)              \
-    if(not(x))                                           \
-    {                                                    \
-        contract_violation_handler(                      \
-            contract_violation{line, file, func, expr}); \
-    }
-#define POSITION_CONTRACT(x, func, expr) \
-    CONTRACT(x, __LINE__, __FILE__, func, expr)
-#define AUTO_CONTRACT(x) POSITION_CONTRACT(x, __PRETTY_FUNCTION__, #x)
+#define POSITION_CONTRACT(type, x, func, expr) \
+    CONTRACT(type, x, std::experimental::source_location::current(), func, expr)
+#define AUTO_CONTRACT(type, x) \
+    POSITION_CONTRACT(type, x, __PRETTY_FUNCTION__, #x)
 
-#define EXPECT_IMPL(x) AUTO_CONTRACT(x)
-#define ASSERT(x) AUTO_CONTRACT(x)
-#define ENSURE(name, x)                                             \
-    auto              pretty_function_##name = __PRETTY_FUNCTION__; \
-    const scope_guard name([&]() {                                  \
-        if(std::uncaught_exceptions() == 0)                         \
-        {                                                           \
-            POSITION_CONTRACT(x, pretty_function_##name, #x);       \
-        }                                                           \
+#define EXPECT_IMPL(x) AUTO_CONTRACT("expect", x)
+#define ASSERT_IMPL(x) AUTO_CONTRACT("assert", x)
+#define ENSURE_IMPL(name, x)                                  \
+    const on_exit_guard name([func = __PRETTY_FUNCTION__]() { \
+        if(std::uncaught_exceptions() == 0)                   \
+        {                                                     \
+            POSITION_CONTRACT("ensure", x, func, #x);         \
+        }                                                     \
     })
-#define ENSURE_INVARIANT()                                                     \
-    auto        pretty_function_invariant = __PRETTY_FUNCTION__;               \
-    scope_guard scoped_ensure_invariant([&]() {                                \
-        POSITION_CONTRACT(invariant(), pretty_function_invariant, "invariant") \
-    })
-#define ENSURE_RETURN(x, v)                       \
-    check_return(                                 \
-        v, [&](const auto &result) { return x; }, \
-        contract_violation{__LINE__, __FILE__, __PRETTY_FUNCTION__, #x})
+#define ENSURE_INVARIANT() \
+    on_exit_guard scoped_ensure_invariant([&] { invariant(); })
 
-#define EXPECT(level, x)
+#ifdef CONTRACTS_AUDIT
+#define EXPECT_AUDIT(x) EXPECT_IMPL(x)
+#define ENSURE_AUDIT(name, x) ENSURE_IMPL(name, x)
+#define ASSERT_AUDIT(x) ASSERT_IMPL(x)
+#else
+#define EXPECT_AUDIT(x)
+#define ENSURE_AUDIT(name, x)
+#define ASSERT_AUDIT(x)
+#endif
+#define EXPECT(x) EXPECT_IMPL(x)
+#define ENSURE(name, x) ENSURE_IMPL(name, x)
+#define ASSERT(x) ASSERT_IMPL(x)
 
 #endif /* CONTRACTS_H */
