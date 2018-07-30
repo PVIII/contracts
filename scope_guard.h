@@ -14,7 +14,7 @@ template<class Func> class on_exit_guard
 
   public:
     constexpr on_exit_guard(Func &&f) : f_(f) {}
-    ~on_exit_guard() { f_(); }
+    ~on_exit_guard() noexcept(noexcept(f_())) { f_(); }
 };
 
 #endif /* SCOPE_GUARD_H */
