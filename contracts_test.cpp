@@ -269,3 +269,61 @@ SCENARIO("Member functions")
         }
     }
 }
+
+struct ensure_in_destructor
+{
+    ~ensure_in_destructor() { do_ensure(bad_value); }
+};
+
+void do_ensure_during_unwind()
+{
+    ensure_in_destructor e;
+    throw other_exception();
+}
+
+SCENARIO("Stack unwinding")
+{
+    GIVEN("A printing handler")
+    {
+        registered_handler = &printing;
+
+        GIVEN("A throwing function with an RAII resource")
+        {
+            WHEN("The resource has a failing postcondition in its destructor")
+            {
+                ostream_capture capture(std::cout);
+                REQUIRE_THROWS_AS(do_ensure_during_unwind(), other_exception &);
+                THEN("The postcondition is checked and fails")
+                {
+                    REQUIRE(capture.str() == "printing");
+                }
+            }
+        }
+    }
+}
+
+constexpr void const_do_expect(int x) { EXPECT(x == good_value); }
+constexpr void const_do_ensure(int x) { ASSERT(x == good_value); }
+
+SCENARIO("Constant expressions")
+{
+    GIVEN("A throwing handler")
+    {
+        registered_handler = &throwing;
+
+        GIVEN("A precondition in a constexpr function")
+        {
+            WHEN("The precondition holds")
+            {
+                THEN("compile") { const_do_expect(good_value); }
+            }
+        }
+        GIVEN("An assertion in a contexpr function")
+        {
+            WHEN("The assertion holds")
+            {
+                THEN("compile") { const_do_ensure(good_value); }
+            }
+        }
+    }
+}

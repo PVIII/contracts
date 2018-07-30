@@ -14,18 +14,20 @@
 #include <experimental/source_location>
 #include <ostream>
 
-struct contract_violation_info {
-	const char * type_;
-	std::experimental::source_location location_;
-	const char * function_name_;
-	const char * expression_;
+struct contract_violation_info
+{
+    const char *                       type_;
+    std::experimental::source_location location_;
+    const char *                       function_name_;
+    const char *                       expression_;
 };
 
-std::ostream &operator<<(std::ostream &out, const contract_violation_info &v) {
-	out << "contract violation [" << v.type_ << "] in "
-			<< v.location_.file_name() << ":" << v.location_.line() << ", "
-			<< v.function_name_ << ", " << v.expression_;
-	return out;
+std::ostream &operator<<(std::ostream &out, const contract_violation_info &v)
+{
+    out << "contract violation [" << v.type_ << "] in "
+        << v.location_.file_name() << ":" << v.location_.line() << ", "
+        << v.function_name_ << ", " << v.expression_;
+    return out;
 }
 
 extern void contract_violation_handler(const contract_violation_info &);
@@ -44,12 +46,9 @@ extern void contract_violation_handler(const contract_violation_info &);
 
 #define EXPECT_IMPL(x) AUTO_CONTRACT("expect", x)
 #define ASSERT_IMPL(x) AUTO_CONTRACT("assert", x)
-#define ENSURE_IMPL(name, x)                                  \
-    const on_exit_guard name([&, func = __PRETTY_FUNCTION__]() { \
-        if(std::uncaught_exceptions() == 0)                   \
-        {                                                     \
-            POSITION_CONTRACT("ensure", x, func, #x);         \
-        }                                                     \
+#define ENSURE_IMPL(name, x)                                            \
+    const on_normal_exit_guard name([&, func = __PRETTY_FUNCTION__]() { \
+        POSITION_CONTRACT("ensure", x, func, #x);                       \
     })
 #define ENSURE_INVARIANT() \
     on_exit_guard scoped_ensure_invariant([&] { invariant(); })
