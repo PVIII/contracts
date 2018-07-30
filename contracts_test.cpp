@@ -65,13 +65,13 @@ SCENARIO("Pre and postconditions")
         registered_handler = &printing;
         GIVEN("Normal functions")
         {
-            WHEN("Precondition fails")
+            WHEN("The precondition fails")
             {
                 ostream_capture capture(std::cout);
                 do_expect(bad_value);
                 REQUIRE(capture.str() == "printing");
             }
-            WHEN("Postcondition fails")
+            WHEN("The postcondition fails")
             {
                 ostream_capture capture(std::cout);
                 do_ensure(bad_value);
@@ -82,13 +82,13 @@ SCENARIO("Pre and postconditions")
         {
             auto do_expect = [](int x) { EXPECT(x == good_value); };
             auto do_ensure = [](int x) { ENSURE(a, x == good_value); };
-            WHEN("Precondition fails")
+            WHEN("The precondition fails")
             {
                 ostream_capture capture(std::cout);
                 do_expect(bad_value);
                 REQUIRE(capture.str() == "printing");
             }
-            WHEN("Postcondition fails")
+            WHEN("The postcondition fails")
             {
                 ostream_capture capture(std::cout);
                 do_ensure(bad_value);
@@ -97,14 +97,14 @@ SCENARIO("Pre and postconditions")
         }
         GIVEN("Throwing functions")
         {
-            WHEN("Precondition fails before throw")
+            WHEN("The precondition fails before throw")
             {
                 ostream_capture capture(std::cout);
                 REQUIRE_THROWS_AS(do_expect_and_throw(bad_value),
                                   other_exception &);
                 REQUIRE(capture.str() == "printing");
             }
-            WHEN("Postcondition declared before throw")
+            WHEN("The postcondition is declared before throw")
             {
                 ostream_capture capture(std::cout);
                 REQUIRE_THROWS_AS(do_ensure_and_throw(bad_value),
@@ -114,7 +114,7 @@ SCENARIO("Pre and postconditions")
                     REQUIRE(capture.str() == "");
                 }
             }
-            WHEN("Postcondition declared after throw")
+            WHEN("The postcondition is declared after throw")
             {
                 ostream_capture capture(std::cout);
                 REQUIRE_THROWS_AS(do_throw_and_ensure(bad_value),
@@ -131,20 +131,20 @@ SCENARIO("Pre and postconditions")
         registered_handler = &throwing;
         GIVEN("Normal functions")
         {
-            WHEN("Precondition holds")
+            WHEN("The precondition holds")
             {
                 REQUIRE_NOTHROW(do_expect(good_value));
             }
-            WHEN("Precondition fails")
+            WHEN("The precondition fails")
             {
                 REQUIRE_THROWS_AS(do_expect(bad_value),
                                   const contract_violation_exception &);
             }
-            WHEN("Postcondition holds")
+            WHEN("The postcondition holds")
             {
                 REQUIRE_NOTHROW(do_ensure(good_value));
             }
-            WHEN("Postcondition fails")
+            WHEN("The postcondition fails")
             {
                 REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception &);
             }
@@ -153,22 +153,118 @@ SCENARIO("Pre and postconditions")
         {
             auto do_expect = [](int x) { EXPECT(x == good_value); };
             auto do_ensure = [](int x) { ENSURE(a, x == good_value); };
-            WHEN("Precondition holds")
+            WHEN("The precondition holds")
             {
                 REQUIRE_NOTHROW(do_expect(good_value));
             }
-            WHEN("Precondition fails")
+            WHEN("The precondition fails")
             {
                 REQUIRE_THROWS_AS(do_expect(bad_value),
                                   const contract_violation_exception &);
             }
-            WHEN("Postcondition holds")
+            WHEN("The postcondition holds")
             {
                 REQUIRE_NOTHROW(do_ensure(good_value));
             }
-            WHEN("Postcondition fails")
+            WHEN("The postcondition fails")
             {
                 REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception &);
+            }
+        }
+    }
+}
+
+struct contract_dummy
+{
+    int  x;
+    void invariant() { ASSERT(x == good_value); }
+    void do_expect(int y) { EXPECT(y == good_value); }
+    void do_ensure(int y) { ENSURE(a, y == good_value); }
+    void do_ensure_invariant() { ENSURE_INVARIANT(); }
+    void do_ensure_invariant_and_throw()
+    {
+        ENSURE_INVARIANT();
+        throw other_exception();
+    }
+};
+
+SCENARIO("Member functions")
+{
+    GIVEN("A throwing handler")
+    {
+        registered_handler = &throwing;
+
+        GIVEN("A good instance")
+        {
+            contract_dummy dummy{good_value};
+
+            WHEN("The precondition holds")
+            {
+                REQUIRE_NOTHROW(dummy.do_expect(good_value));
+            }
+            WHEN("The precondition fails")
+            {
+                REQUIRE_THROWS_AS(dummy.do_ensure(bad_value),
+                                  contract_violation_exception &);
+            }
+            WHEN("The postcondition fails")
+            {
+                REQUIRE_THROWS_AS(dummy.do_expect(bad_value),
+                                  contract_violation_exception &);
+            }
+            WHEN("The invariant is asserted")
+            {
+                THEN("The invariant holds")
+                {
+                    REQUIRE_NOTHROW(dummy.do_ensure_invariant());
+                }
+            }
+            GIVEN("A throwing method")
+            {
+                WHEN("The invariant is asserted")
+                {
+                    THEN("The invariant is checked and holds")
+                    {
+                        REQUIRE_THROWS_AS(dummy.do_ensure_invariant_and_throw(),
+                                          other_exception &);
+                    }
+                }
+            }
+        }
+        GIVEN("A bad instance")
+        {
+            contract_dummy dummy{bad_value};
+
+            WHEN("The invariant is asserted")
+            {
+                THEN("The invariant fails")
+                {
+                    REQUIRE_THROWS_AS(dummy.do_ensure_invariant(),
+                                      contract_violation_exception &);
+                }
+            }
+        }
+    }
+    GIVEN("A printing handler")
+    {
+        registered_handler = &printing;
+
+        GIVEN("A bad instance")
+        {
+            contract_dummy dummy{bad_value};
+
+            GIVEN("A throwing method")
+            {
+                WHEN("The invariant is asserted")
+                {
+                    ostream_capture capture(std::cout);
+                    REQUIRE_THROWS_AS(dummy.do_ensure_invariant_and_throw(),
+                                      other_exception &);
+                    THEN("The invariant is checked and fails")
+                    {
+                        REQUIRE(capture.str() == "printing");
+                    }
+                }
             }
         }
     }
