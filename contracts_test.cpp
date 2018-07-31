@@ -303,7 +303,7 @@ SCENARIO("Stack unwinding")
 }
 
 constexpr void const_do_expect(int x) { EXPECT(x == good_value); }
-constexpr void const_do_ensure(int x) { ASSERT(x == good_value); }
+constexpr void const_do_assert(int x) { ASSERT(x == good_value); }
 
 SCENARIO("Constant expressions")
 {
@@ -322,7 +322,7 @@ SCENARIO("Constant expressions")
         {
             WHEN("The assertion holds")
             {
-                THEN("compile") { const_do_ensure(good_value); }
+                THEN("compile") { const_do_assert(good_value); }
             }
         }
     }
