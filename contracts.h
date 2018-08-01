@@ -22,7 +22,8 @@ struct contract_violation_info
     const char *                       expression_;
 };
 
-std::ostream &operator<<(std::ostream &out, const contract_violation_info &v)
+inline std::ostream &operator<<(std::ostream &                 out,
+                                const contract_violation_info &v)
 {
     out << "contract violation [" << v.type_ << "] in "
         << v.location_.file_name() << ":" << v.location_.line() << ", "

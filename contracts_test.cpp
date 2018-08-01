@@ -5,29 +5,21 @@
  *      Author: pait
  */
 
-#define CONTRACTS_AUDIT
+#include "contract_test.h"
 
 #include "contracts.h"
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
-#include <iostream>
 #include <streambuf>
 
 #include "ios.h"
 
-class contract_violation_exception : public std::exception
-{
-};
-class other_exception : public std::exception
-{
-};
+void (*registered_handler)() = nullptr;
 
 void throwing() { throw contract_violation_exception(); }
 void printing() { std::cout << "printing"; }
-
-static void (*registered_handler)() = nullptr;
 
 void contract_violation_handler(contract_violation_info const &)
 {
@@ -37,22 +29,19 @@ void contract_violation_handler(contract_violation_info const &)
     }
 }
 
-constexpr int bad_value  = 1;
-constexpr int good_value = 0;
-
-void do_expect(int x) { EXPECT(x == good_value); }
-void do_ensure(int x) { ENSURE(a, x == good_value); }
-void do_expect_and_throw(int x)
+static void do_expect(int x) { EXPECT(x == good_value); }
+static void do_ensure(int x) { ENSURE(a, x == good_value); }
+static void do_expect_and_throw(int x)
 {
     EXPECT(x == good_value);
     throw other_exception();
 }
-void do_ensure_and_throw(int x)
+static void do_ensure_and_throw(int x)
 {
     ENSURE(a, x == good_value);
     throw other_exception();
 }
-void do_throw_and_ensure(int x)
+static void do_throw_and_ensure(int x)
 {
     throw other_exception();
     ENSURE(a, x == good_value);
@@ -243,7 +232,7 @@ struct ensure_in_destructor
     ~ensure_in_destructor() { do_ensure(bad_value); }
 };
 
-void do_ensure_during_unwind()
+static void do_ensure_during_unwind()
 {
     ensure_in_destructor e;
     throw other_exception();
@@ -288,6 +277,36 @@ SCENARIO("Constant expressions")
             WHEN("The assertion holds")
             {
                 THEN("compile") { const_do_assert(good_value); }
+            }
+        }
+    }
+}
+
+static void ensure_audit([[maybe_unused]] int x)
+{
+    ENSURE_AUDIT(a, x == good_value);
+}
+static void expect_audit([[maybe_unused]] int x)
+{
+    EXPECT_AUDIT(x == good_value);
+}
+static void assert_audit([[maybe_unused]] int x)
+{
+    ASSERT_AUDIT(x == good_value);
+}
+
+SCENARIO("Audits disabled")
+{
+    registered_handler = &throwing;
+    GIVEN("Function with auditing contracts")
+    {
+        WHEN("The condition fails")
+        {
+            THEN("The violation handler is not invoked")
+            {
+                REQUIRE_NOTHROW(ensure_audit(bad_value));
+                REQUIRE_NOTHROW(expect_audit(bad_value));
+                REQUIRE_NOTHROW(assert_audit(bad_value));
             }
         }
     }
