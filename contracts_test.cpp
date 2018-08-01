@@ -60,116 +60,84 @@ void do_throw_and_ensure(int x)
 
 SCENARIO("Pre and postconditions")
 {
-    GIVEN("A normal handler")
+    registered_handler = &printing;
+    GIVEN("Normal functions")
     {
-        registered_handler = &printing;
-        GIVEN("Normal functions")
+        WHEN("The precondition fails")
         {
-            WHEN("The precondition fails")
+            ostream_capture capture(std::cout);
+            do_expect(bad_value);
+            REQUIRE(capture.str() == "printing");
+        }
+        WHEN("The postcondition fails")
+        {
+            ostream_capture capture(std::cout);
+            do_ensure(bad_value);
+            REQUIRE(capture.str() == "printing");
+        }
+    }
+    GIVEN("Lambda functions")
+    {
+        auto do_expect = [](int x) { EXPECT(x == good_value); };
+        auto do_ensure = [](int x) { ENSURE(a, x == good_value); };
+        WHEN("The precondition fails")
+        {
+            ostream_capture capture(std::cout);
+            do_expect(bad_value);
+            REQUIRE(capture.str() == "printing");
+        }
+        WHEN("The postcondition fails")
+        {
+            ostream_capture capture(std::cout);
+            do_ensure(bad_value);
+            REQUIRE(capture.str() == "printing");
+        }
+    }
+    GIVEN("Throwing functions")
+    {
+        WHEN("The precondition fails before throw")
+        {
+            ostream_capture capture(std::cout);
+            REQUIRE_THROWS_AS(do_expect_and_throw(bad_value),
+                              other_exception &);
+            REQUIRE(capture.str() == "printing");
+        }
+        WHEN("The postcondition is declared before throw")
+        {
+            ostream_capture capture(std::cout);
+            REQUIRE_THROWS_AS(do_ensure_and_throw(bad_value),
+                              other_exception &);
+            THEN("The postcondition is not checked")
             {
-                ostream_capture capture(std::cout);
-                do_expect(bad_value);
-                REQUIRE(capture.str() == "printing");
-            }
-            WHEN("The postcondition fails")
-            {
-                ostream_capture capture(std::cout);
-                do_ensure(bad_value);
-                REQUIRE(capture.str() == "printing");
+                REQUIRE(capture.str() == "");
             }
         }
-        GIVEN("Lambda functions")
+        WHEN("The postcondition is declared after throw")
         {
-            auto do_expect = [](int x) { EXPECT(x == good_value); };
-            auto do_ensure = [](int x) { ENSURE(a, x == good_value); };
-            WHEN("The precondition fails")
+            ostream_capture capture(std::cout);
+            REQUIRE_THROWS_AS(do_throw_and_ensure(bad_value),
+                              other_exception &);
+            THEN("The postcondition is not checked")
             {
-                ostream_capture capture(std::cout);
-                do_expect(bad_value);
-                REQUIRE(capture.str() == "printing");
-            }
-            WHEN("The postcondition fails")
-            {
-                ostream_capture capture(std::cout);
-                do_ensure(bad_value);
-                REQUIRE(capture.str() == "printing");
-            }
-        }
-        GIVEN("Throwing functions")
-        {
-            WHEN("The precondition fails before throw")
-            {
-                ostream_capture capture(std::cout);
-                REQUIRE_THROWS_AS(do_expect_and_throw(bad_value),
-                                  other_exception &);
-                REQUIRE(capture.str() == "printing");
-            }
-            WHEN("The postcondition is declared before throw")
-            {
-                ostream_capture capture(std::cout);
-                REQUIRE_THROWS_AS(do_ensure_and_throw(bad_value),
-                                  other_exception &);
-                THEN("The postcondition is not checked")
-                {
-                    REQUIRE(capture.str() == "");
-                }
-            }
-            WHEN("The postcondition is declared after throw")
-            {
-                ostream_capture capture(std::cout);
-                REQUIRE_THROWS_AS(do_throw_and_ensure(bad_value),
-                                  other_exception &);
-                THEN("The postcondition is not checked")
-                {
-                    REQUIRE(capture.str() == "");
-                }
+                REQUIRE(capture.str() == "");
             }
         }
     }
-    GIVEN("A throwing handler")
+}
+
+SCENARIO("Throwing handler")
+{
+    registered_handler = &throwing;
+    GIVEN("Normal functions")
     {
-        registered_handler = &throwing;
-        GIVEN("Normal functions")
+        WHEN("The precondition fails")
         {
-            WHEN("The precondition holds")
-            {
-                REQUIRE_NOTHROW(do_expect(good_value));
-            }
-            WHEN("The precondition fails")
-            {
-                REQUIRE_THROWS_AS(do_expect(bad_value),
-                                  const contract_violation_exception &);
-            }
-            WHEN("The postcondition holds")
-            {
-                REQUIRE_NOTHROW(do_ensure(good_value));
-            }
-            WHEN("The postcondition fails")
-            {
-                REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception &);
-            }
+            REQUIRE_THROWS_AS(do_expect(bad_value),
+                              contract_violation_exception &);
         }
-        GIVEN("Lambda functions")
+        WHEN("The postcondition fails")
         {
-            auto do_expect = [](int x) { EXPECT(x == good_value); };
-            auto do_ensure = [](int x) { ENSURE(a, x == good_value); };
-            WHEN("The precondition holds")
-            {
-                REQUIRE_NOTHROW(do_expect(good_value));
-            }
-            WHEN("The precondition fails")
-            {
-                REQUIRE_THROWS_AS(do_expect(bad_value),
-                                  const contract_violation_exception &);
-            }
-            WHEN("The postcondition holds")
-            {
-                REQUIRE_NOTHROW(do_ensure(good_value));
-            }
-            WHEN("The postcondition fails")
-            {
-                REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception &);
-            }
+            REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception &);
         }
     }
 }
@@ -283,20 +251,17 @@ void do_ensure_during_unwind()
 
 SCENARIO("Stack unwinding")
 {
-    GIVEN("A printing handler")
-    {
-        registered_handler = &printing;
+    registered_handler = &printing;
 
-        GIVEN("A throwing function with an RAII resource")
+    GIVEN("A throwing function with an RAII resource")
+    {
+        WHEN("The resource has a failing postcondition in its destructor")
         {
-            WHEN("The resource has a failing postcondition in its destructor")
+            ostream_capture capture(std::cout);
+            REQUIRE_THROWS_AS(do_ensure_during_unwind(), other_exception &);
+            THEN("The postcondition is checked and fails")
             {
-                ostream_capture capture(std::cout);
-                REQUIRE_THROWS_AS(do_ensure_during_unwind(), other_exception &);
-                THEN("The postcondition is checked and fails")
-                {
-                    REQUIRE(capture.str() == "printing");
-                }
+                REQUIRE(capture.str() == "printing");
             }
         }
     }
