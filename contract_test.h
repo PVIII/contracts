@@ -1,10 +1,3 @@
-/*
- * contract_test.h
- *
- *  Created on: 1 Aug 2018
- *      Author: Patrick Freninger
- */
-
 #ifndef CONTRACT_TEST_H
 #define CONTRACT_TEST_H
 

@@ -1,8 +1,5 @@
-/*
- * contracts_audit_test.cpp
- *
- *  Created on: 1 Aug 2018
- *      Author: Patrick Freninger
+/** @brief An extra test file for testing contracts with audit contracts
+ * enabled.
  */
 
 #define CONTRACTS_AUDIT
@@ -34,17 +31,17 @@ SCENARIO("Audits enabled")
         WHEN("The precondition fails")
         {
             REQUIRE_THROWS_AS(expect_audit(bad_value),
-                              contract_violation_exception &);
+                              contract_violation_exception&);
         }
         WHEN("The postcondition fails")
         {
             REQUIRE_THROWS_AS(ensure_audit(bad_value),
-                              contract_violation_exception &);
+                              contract_violation_exception&);
         }
         WHEN("An assertion fails")
         {
             REQUIRE_THROWS_AS(assert_audit(bad_value),
-                              contract_violation_exception &);
+                              contract_violation_exception&);
         }
     }
 }

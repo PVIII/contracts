@@ -1,8 +1,4 @@
-/*
- * ostream.h
- *
- *  Created on: 30 Jul 2018
- *      Author: Patrick Freninger
+/** @brief iostream helpers.
  */
 
 #ifndef IOS_H
@@ -13,12 +9,12 @@
 
 template<class S> class ostream_capture
 {
-    S &                stream_;
-    std::streambuf *   old_buffer_;
+    S&                 stream_;
+    std::streambuf*    old_buffer_;
     std::ostringstream redirect_;
 
   public:
-    ostream_capture(S &stream) : stream_(stream), old_buffer_(stream.rdbuf())
+    ostream_capture(S& stream) : stream_(stream), old_buffer_(stream.rdbuf())
     {
         stream_.rdbuf(redirect_.rdbuf());
     }

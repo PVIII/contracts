@@ -1,8 +1,23 @@
-/*
- * contracts.h
+/**
+ * @brief This library provides macros to implement contract programming.
  *
- *  Created on: 16 Jul 2018
- *      Author: pait
+ * Its design follows the C++20 contract proposal. @see
+ * https://en.cppreference.com/w/cpp/header/contract
+ *
+ * There is four types of contracts:
+ * - *expect* for checking preconditions. That can be conditions for parameters
+ * or the program state before a function executes.
+ * - *ensure* for checking postconditions. That can be conditions for return
+ * values or the program state after a function has executed.
+ * - *assert* for checking other conditions anywhere in the function.
+ * - *invariant* for checking if an object is in a valid state.
+ *
+ * The library tries to enable a declarative syntax for postconditions and
+ * invariants. Both can be defined at the start of a function and will be
+ * checked when the function returns.
+ *
+ * Example:
+ * @snippet contract_example.cpp trim example
  */
 
 #ifndef CONTRACTS_H
@@ -16,14 +31,14 @@
 
 struct contract_violation_info
 {
-    const char *                       type_;
+    const char*                        type_;
     std::experimental::source_location location_;
-    const char *                       function_name_;
-    const char *                       expression_;
+    const char*                        function_name_;
+    const char*                        expression_;
 };
 
-inline std::ostream &operator<<(std::ostream &                 out,
-                                const contract_violation_info &v)
+inline std::ostream& operator<<(std::ostream&                  out,
+                                const contract_violation_info& v)
 {
     out << "contract violation [" << v.type_ << "] in "
         << v.location_.file_name() << ":" << v.location_.line() << ", "
@@ -31,7 +46,7 @@ inline std::ostream &operator<<(std::ostream &                 out,
     return out;
 }
 
-extern void contract_violation_handler(const contract_violation_info &);
+extern void contract_violation_handler(const contract_violation_info&);
 
 #define CONTRACT(type, x, location, func, expr)                   \
     if(not(x))                                                    \
