@@ -8,7 +8,7 @@
 #include <cstring>
 #include <locale>
 
-#include "contracts.h"
+#include "contracts/contracts.hpp"
 
 /// [trim example]
 char* trim(char* str)

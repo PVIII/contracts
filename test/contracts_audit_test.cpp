@@ -6,7 +6,7 @@
 
 #include "contract_test.h"
 
-#include "contracts.h"
+#include "contracts/contracts.hpp"
 
 #include "catch.hpp"
 

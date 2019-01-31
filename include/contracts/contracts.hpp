@@ -24,7 +24,7 @@
 #ifndef CONTRACTS_H
 #define CONTRACTS_H
 
-#include "scope_guard.h"
+#include "cpp_utils/scope_guard.hpp"
 
 #include <exception>
 #include <experimental/source_location>
@@ -63,12 +63,12 @@ extern void contract_violation_handler(const contract_violation_info&);
 
 #define EXPECT_IMPL(x) AUTO_CONTRACT("expect", x)
 #define ASSERT_IMPL(x) AUTO_CONTRACT("assert", x)
-#define ENSURE_IMPL(name, x)                                            \
-    const on_normal_exit_guard name([&, func = __PRETTY_FUNCTION__]() { \
-        POSITION_CONTRACT("ensure", x, func, #x);                       \
+#define ENSURE_IMPL(name, x)                                       \
+    const return_guard name([&, func = __PRETTY_FUNCTION__]() { \
+        POSITION_CONTRACT("ensure", x, func, #x);                  \
     })
 #define ENSURE_INVARIANT() \
-    on_exit_guard scoped_ensure_invariant([&] { invariant(); })
+    exit_guard scoped_ensure_invariant([&] { invariant(); })
 
 #ifdef CONTRACTS_AUDIT
 #define EXPECT_AUDIT(x) EXPECT_IMPL(x)

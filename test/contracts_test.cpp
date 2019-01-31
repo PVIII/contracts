@@ -1,13 +1,13 @@
 #include "contract_test.h"
 
-#include "contracts.h"
+#include "contracts/contracts.hpp"
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
 #include <streambuf>
 
-#include "ios.h"
+#include "cpp_utils/ios.hpp"
 
 void (*registered_handler)() = nullptr;
 
