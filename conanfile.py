@@ -9,7 +9,7 @@ class Contracts(ConanFile):
     settings = "os", "compiler", "arch", "build_type"
     generators = "cmake"
     build_requires = "cpputils/1.0.1@pviii/testing"
-    exports_sources = "include/**", "CMakeLists.txt", "test/CMakeLists.txt", "test/*.cpp"
+    exports_sources = "include/**", "CMakeLists.txt", "test/CMakeLists.txt", "test/**"
     no_copy_source = True
 
     def build(self):
