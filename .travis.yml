@@ -1,6 +1,3 @@
-env:
-  global:
-    - CONAN_UPLOAD_RETRY: 2
 linux: &linux
   os: linux
   dist: xenial
@@ -12,12 +9,6 @@ linux: &linux
 matrix:
   fast_finish: true
   include:
-    - <<: *linux
-      env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6
-
-    - <<: *linux
-      env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7
-
     - <<: *linux
       env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
 
