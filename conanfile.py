@@ -8,7 +8,7 @@ class Contracts(ConanFile):
     description = "Macro magic to enable a subset of the contract programming proposal."
     settings = "os", "compiler", "arch", "build_type"
     generators = "cmake"
-    requires = "cpputils/1.0.1@pviii/stable"
+    requires = "cpputils/1.0.2@pviii/stable"
     build_requires = "Catch2/2.7.0@catchorg/stable"
     exports_sources = "include/**", "CMakeLists.txt", "test/CMakeLists.txt", "test/**"
     no_copy_source = True
