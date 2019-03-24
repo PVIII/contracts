@@ -8,7 +8,7 @@
 
 #include "contracts/contracts.hpp"
 
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 
 static void ensure_audit([[maybe_unused]] int x)
 {
@@ -31,17 +31,17 @@ SCENARIO("Audits enabled")
         WHEN("The precondition fails")
         {
             REQUIRE_THROWS_AS(expect_audit(bad_value),
-                              contract_violation_exception&);
+                              contract_violation_exception);
         }
         WHEN("The postcondition fails")
         {
             REQUIRE_THROWS_AS(ensure_audit(bad_value),
-                              contract_violation_exception&);
+                              contract_violation_exception);
         }
         WHEN("An assertion fails")
         {
             REQUIRE_THROWS_AS(assert_audit(bad_value),
-                              contract_violation_exception&);
+                              contract_violation_exception);
         }
     }
 }
