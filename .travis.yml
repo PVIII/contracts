@@ -1,8 +1,15 @@
+env:
+   global:
+     - CONAN_STABLE_BRANCH_PATTERN: "master/*"
+     - CONAN_UPLOAD_ONLY_WHEN_STABLE: 0
+     - CONAN_SKIP_CHECK_CREDENTIALS: 1
+
+sudo: required
+language: cpp
+
 linux: &linux
   os: linux
-  dist: xenial
-  sudo: required
-  language: cpp
+  dist: cosmic
   services:
     - docker
 
