@@ -23,3 +23,4 @@ pip install conan --upgrade --user
 pip install conan_package_tools --user
 
 conan user
+conan remote add pviii ${CONAN_UPLOAD}
