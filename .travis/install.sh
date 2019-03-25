@@ -23,4 +23,3 @@ pip install conan --upgrade --user
 pip install conan_package_tools --user
 
 conan user
-conan remote add pviii https://api.bintray.com/conan/pviii/conan

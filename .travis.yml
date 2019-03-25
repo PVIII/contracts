@@ -3,6 +3,7 @@ env:
      - CONAN_STABLE_BRANCH_PATTERN: "master/*"
      - CONAN_UPLOAD_ONLY_WHEN_STABLE: 0
      - CONAN_SKIP_CHECK_CREDENTIALS: 1
+     - CONAN_REMOTES: https://api.bintray.com/conan/pviii/conan
 
 sudo: required
 language: cpp
