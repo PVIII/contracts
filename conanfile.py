@@ -2,7 +2,7 @@ from conans import ConanFile, CMake
 
 class Contracts(ConanFile):
     name = "contracts"
-    version = "0.2"
+    version = "1.0"
     url = "https://github.com/PVIII/contracts.git"
     license = "MIT"
     description = "Macro magic to enable a subset of the contract programming proposal."
