@@ -3,7 +3,7 @@
 #include "contracts/contracts.hpp"
 
 #define CATCH_CONFIG_MAIN
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 
 #include <streambuf>
 
@@ -77,13 +77,13 @@ SCENARIO("Pre and postconditions")
         WHEN("The precondition fails before throw")
         {
             ostream_capture capture(std::cout);
-            REQUIRE_THROWS_AS(do_expect_and_throw(bad_value), other_exception&);
+            REQUIRE_THROWS_AS(do_expect_and_throw(bad_value), other_exception);
             REQUIRE(capture.str() == "printing");
         }
         WHEN("The postcondition is declared before throw")
         {
             ostream_capture capture(std::cout);
-            REQUIRE_THROWS_AS(do_ensure_and_throw(bad_value), other_exception&);
+            REQUIRE_THROWS_AS(do_ensure_and_throw(bad_value), other_exception);
             THEN("The postcondition is not checked")
             {
                 REQUIRE(capture.str() == "");
@@ -92,7 +92,7 @@ SCENARIO("Pre and postconditions")
         WHEN("The postcondition is declared after throw")
         {
             ostream_capture capture(std::cout);
-            REQUIRE_THROWS_AS(do_throw_and_ensure(bad_value), other_exception&);
+            REQUIRE_THROWS_AS(do_throw_and_ensure(bad_value), other_exception);
             THEN("The postcondition is not checked")
             {
                 REQUIRE(capture.str() == "");
@@ -109,11 +109,11 @@ SCENARIO("Throwing handler")
         WHEN("The precondition fails")
         {
             REQUIRE_THROWS_AS(do_expect(bad_value),
-                              contract_violation_exception&);
+                              contract_violation_exception);
         }
         WHEN("The postcondition fails")
         {
-            REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception&);
+            REQUIRE_THROWS_AS(do_ensure(bad_value), std::exception);
         }
     }
 }
@@ -149,12 +149,12 @@ SCENARIO("Member functions")
             WHEN("The precondition fails")
             {
                 REQUIRE_THROWS_AS(dummy.do_ensure(bad_value),
-                                  contract_violation_exception&);
+                                  contract_violation_exception);
             }
             WHEN("The postcondition fails")
             {
                 REQUIRE_THROWS_AS(dummy.do_expect(bad_value),
-                                  contract_violation_exception&);
+                                  contract_violation_exception);
             }
             WHEN("The invariant is asserted")
             {
@@ -170,7 +170,7 @@ SCENARIO("Member functions")
                     THEN("The invariant is checked and holds")
                     {
                         REQUIRE_THROWS_AS(dummy.do_ensure_invariant_and_throw(),
-                                          other_exception&);
+                                          other_exception);
                     }
                 }
             }
@@ -184,7 +184,7 @@ SCENARIO("Member functions")
                 THEN("The invariant fails")
                 {
                     REQUIRE_THROWS_AS(dummy.do_ensure_invariant(),
-                                      contract_violation_exception&);
+                                      contract_violation_exception);
                 }
             }
         }
@@ -203,7 +203,7 @@ SCENARIO("Member functions")
                 {
                     ostream_capture capture(std::cout);
                     REQUIRE_THROWS_AS(dummy.do_ensure_invariant_and_throw(),
-                                      other_exception&);
+                                      other_exception);
                     THEN("The invariant is checked and fails")
                     {
                         REQUIRE(capture.str() == "printing");
@@ -234,7 +234,7 @@ SCENARIO("Stack unwinding")
         WHEN("The resource has a failing postcondition in its destructor")
         {
             ostream_capture capture(std::cout);
-            REQUIRE_THROWS_AS(do_ensure_during_unwind(), other_exception&);
+            REQUIRE_THROWS_AS(do_ensure_during_unwind(), other_exception);
             THEN("The postcondition is checked and fails")
             {
                 REQUIRE(capture.str() == "printing");

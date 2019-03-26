@@ -1,11 +1,16 @@
 env:
-  global:
-    - CONAN_UPLOAD_RETRY: 2
+   global:
+     - CONAN_STABLE_BRANCH_PATTERN: "master/*"
+     - CONAN_UPLOAD_ONLY_WHEN_STABLE: 0
+     - CONAN_SKIP_CHECK_CREDENTIALS: 1
+     - CONAN_REMOTES: https://api.bintray.com/conan/pviii/conan
+
+sudo: required
+language: cpp
+
 linux: &linux
   os: linux
-  dist: xenial
-  sudo: required
-  language: cpp
+  dist: cosmic
   services:
     - docker
 
@@ -13,13 +18,9 @@ matrix:
   fast_finish: true
   include:
     - <<: *linux
-      env: CONAN_GCC_VERSIONS=6 CONAN_DOCKER_IMAGE=conanio/gcc6
-
+      env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7 CONAN_UPLOAD=""
     - <<: *linux
-      env: CONAN_GCC_VERSIONS=7 CONAN_DOCKER_IMAGE=conanio/gcc7
-
-    - <<: *linux
-      env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
+      env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8 CONAN_SKIP_CHECK_CREDENTIALS=0
 
 install:
   - chmod +x .travis/install.sh

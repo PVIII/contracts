@@ -3,7 +3,7 @@
 
 #include "contract_test.h"
 
-#include "catch.hpp"
+#include "catch2/catch.hpp"
 #include <algorithm>
 #include <cstring>
 #include <locale>
