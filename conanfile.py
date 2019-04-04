@@ -10,7 +10,7 @@ class Contracts(ConanFile):
     generators = "cmake"
     requires = "cpputils/1.0.2@pviii/stable"
     build_requires = "Catch2/2.7.0@catchorg/stable"
-    exports_sources = "include/**", "CMakeLists.txt", "test/CMakeLists.txt", "test/**"
+    exports_sources = "**"
     no_copy_source = True
 
     def build(self):
@@ -22,6 +22,8 @@ class Contracts(ConanFile):
     def package(self):
         self.copy("*.hpp")
         self.copy("CMakeLists.txt")
+        self.copy("LICENSE.txt")
+        self.copy("README.md")
 
     def package_id(self):
         self.info.header_only()
