@@ -9,8 +9,8 @@ class Contracts(ConanFile):
     settings = "os", "compiler", "arch", "build_type"
     generators = "cmake"
     requires = "cpputils/1.0.2@pviii/stable"
-    build_requires = "Catch2/2.7.0@catchorg/stable"
-    exports_sources = "include/**", "CMakeLists.txt", "test/CMakeLists.txt", "test/**"
+    build_requires = "prebuilt-catch2/2.7.1@pviii/stable"
+    exports_sources = "**"
     no_copy_source = True
 
     def build(self):

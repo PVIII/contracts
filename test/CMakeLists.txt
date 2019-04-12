@@ -4,6 +4,6 @@ add_executable(contracts_test
                contracts_audit_test.cpp
                contracts_example.cpp
                contracts_test.cpp)
-target_link_libraries(contracts_test PUBLIC contracts CONAN_PKG::Catch2)
+target_link_libraries(contracts_test PUBLIC contracts CONAN_PKG::prebuilt-catch2)
 
 add_test(NAME test COMMAND contracts_test)
