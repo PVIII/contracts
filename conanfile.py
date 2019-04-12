@@ -22,6 +22,8 @@ class Contracts(ConanFile):
     def package(self):
         self.copy("*.hpp")
         self.copy("CMakeLists.txt")
+        self.copy("LICENSE.txt")
+        self.copy("README.md")
 
     def package_id(self):
         self.info.header_only()
